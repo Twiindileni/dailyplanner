@@ -3,44 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weekly Task Calendar</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Weekly Task Planner</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Link to the CSS file if separate -->
 </head>
 <body>
     <div class="planner-container">
-        <!-- Header with Logo and Current Time -->
         <div class="header">
             <img src="img/sheka PNG-01.png" alt="Logo" class="logo">
-            <div id="current-time"></div>
+            <h1>Weekly Task Planner</h1>
         </div>
-        
-        <h1>Weekly Task Calendar</h1>
-        
-        <!-- Calendar Grid -->
         <div class="calendar">
-            <div class="calendar-header">
-                <div class="day">Monday</div>
-                <div class="day">Tuesday</div>
-                <div class="day">Wednesday</div>
-                <div class="day">Thursday</div>
-                <div class="day">Friday</div>
-                <div class="day">Saturday</div>
-                <div class="day">Sunday</div>
+            <!-- Monday -->
+            <div class="time-slot" data-day="Monday">
+                <h3>Monday</h3>
+                <div class="tasks" id="tasksMonday"></div>
+                <input type="text" id="taskInputMonday" placeholder="Add task">
+                <input type="number" id="amountInputMonday" placeholder="Amount">
+                <button onclick="addTask('Monday')">Add Task</button>
+                <div class="day-total" id="totalMonday">Total: $0</div>
             </div>
-            <div class="calendar-body">
-                <!-- Times and Tasks -->
-                <div class="time-slot" data-time="10:00 am">
-                    <div class="time">10:00 am</div>
-                    <div class="tasks">
-                        <input type="text" placeholder="Add task..." class="task-input">
-                        <button class="add-task" onclick="addTask(this)">Add</button>
-                    </div>
-                </div>
-                <!-- Repeat time slots for different times here (e.g., 11:00 am, 12:00 pm) -->
+
+            <!-- Tuesday -->
+            <div class="time-slot" data-day="Tuesday">
+                <h3>Tuesday</h3>
+                <div class="tasks" id="tasksTuesday"></div>
+                <input type="text" id="taskInputTuesday" placeholder="Add task">
+                <input type="number" id="amountInputTuesday" placeholder="Amount">
+                <button onclick="addTask('Tuesday')">Add Task</button>
+                <div class="day-total" id="totalTuesday">Total: $0</div>
+            </div>
+
+            <!-- Wednesday -->
+            <div class="time-slot" data-day="Wednesday">
+                <h3>Wednesday</h3>
+                <div class="tasks" id="tasksWednesday"></div>
+                <input type="text" id="taskInputWednesday" placeholder="Add task">
+                <input type="number" id="amountInputWednesday" placeholder="Amount">
+                <button onclick="addTask('Wednesday')">Add Task</button>
+                <div class="day-total" id="totalWednesday">Total: $0</div>
+            </div>
+
+            <!-- Thursday -->
+            <div class="time-slot" data-day="Thursday">
+                <h3>Thursday</h3>
+                <div class="tasks" id="tasksThursday"></div>
+                <input type="text" id="taskInputThursday" placeholder="Add task">
+                <input type="number" id="amountInputThursday" placeholder="Amount">
+                <button onclick="addTask('Thursday')">Add Task</button>
+                <div class="day-total" id="totalThursday">Total: $0</div>
+            </div>
+
+            <!-- Friday -->
+            <div class="time-slot" data-day="Friday">
+                <h3>Friday</h3>
+                <div class="tasks" id="tasksFriday"></div>
+                <input type="text" id="taskInputFriday" placeholder="Add task">
+                <input type="number" id="amountInputFriday" placeholder="Amount">
+                <button onclick="addTask('Friday')">Add Task</button>
+                <div class="day-total" id="totalFriday">Total: $0</div>
+            </div>
+
+            <!-- Saturday -->
+            <div class="time-slot" data-day="Saturday">
+                <h3>Saturday</h3>
+                <div class="tasks" id="tasksSaturday"></div>
+                <input type="text" id="taskInputSaturday" placeholder="Add task">
+                <input type="number" id="amountInputSaturday" placeholder="Amount">
+                <button onclick="addTask('Saturday')">Add Task</button>
+                <div class="day-total" id="totalSaturday">Total: $0</div>
+            </div>
+
+            <!-- Sunday -->
+            <div class="time-slot" data-day="Sunday">
+                <h3>Sunday</h3>
+                <div class="tasks" id="tasksSunday"></div>
+                <input type="text" id="taskInputSunday" placeholder="Add task">
+                <input type="number" id="amountInputSunday" placeholder="Amount">
+                <button onclick="addTask('Sunday')">Add Task</button>
+                <div class="day-total" id="totalSunday">Total: $0</div>
             </div>
         </div>
     </div>
-    
-    <script src="script.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Load tasks from localStorage on page load
+            loadTasks();
+        });
+
+        function addTask(day) {
+            const taskInput = document.getElementById(`taskInput${day}`);
+            const amountInput = document.getElementById(`amountInput${day}`);
+            const taskText = taskInput.value.trim();
+            const taskAmount = parseFloat(amountInput.value.trim());
+
+            if (taskText && !isNaN(taskAmount) && taskAmount > 0) {
+                // Save task to localStorage
+                saveTask(day, taskText, taskAmount);
+
+                // Display the task in the UI
+                displayTask(day, taskText, taskAmount);
+
+                // Update daily total
+                updateDayTotal(day);
+
+                // Clear input fields
+                taskInput.value = "";
+                amountInput.value = "";
+            } else {
+                console.log("Invalid task or amount"); // Debugging statement
+            }
+        }
+
+        function saveTask(day, taskText, taskAmount) {
+            const tasks = JSON.parse(localStorage.getItem(day)) || [];
+            tasks.push({ description: taskText, amount: taskAmount });
+            localStorage.setItem(day, JSON.stringify(tasks));
+        }
+
+        function loadTasks() {
+            const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+            daysOfWeek.forEach(day => {
+                displayTasksForDay(day);
+                updateDayTotal(day);
+            });
+        }
+
+        function displayTasksForDay(day) {
+            const tasks = JSON.parse(localStorage.getItem(day)) || [];
+            tasks.forEach(task => displayTask(day, task.description, task.amount));
+        }
+
+        function displayTask(day, taskText, taskAmount) {
+            const tasksContainer = document.getElementById(`tasks${day}`);
+            const taskItem = document.createElement("div");
+            taskItem.classList.add("task-item");
+            taskItem.textContent = `${taskText} - $${taskAmount.toFixed(2)}`;
+            tasksContainer.appendChild(taskItem);
+        }
+
+        function updateDayTotal(day) {
+            const tasks = JSON.parse(localStorage.getItem(day)) || [];
+            const total = tasks.reduce((sum, task) => sum + task.amount, 0);
+            document.getElementById(`total${day}`).textContent = `Total: $${total.toFixed(2)}`;
+        }
+    </script>
 </body>
 </html>
