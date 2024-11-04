@@ -10,8 +10,23 @@
     <div class="planner-container">
         <div class="header">
             <img src="img/sheka PNG-01.png" alt="Logo" class="logo">
-            <h1>Weekly Task Planner</h1>
+            <h1>Sheka Weekly Task Planner</h1>
         </div>
+
+        <!-- Color Legend -->
+        <div class="color-legend">
+            <h3>Task Status Colors</h3>
+            <div class="color-item" title="Task completed">
+                <span style="background-color: green;"></span> Done
+            </div>
+            <div class="color-item" title="Task in progress">
+                <span style="background-color: orange;"></span> In Progress
+            </div>
+            <div class="color-item" title="Task getting stocked">
+                <span style="background-color: red;"></span> Getting Stock
+            </div>
+        </div>
+
         <div class="calendar">
             <!-- Monday -->
             <div class="time-slot" data-day="Monday">
@@ -117,7 +132,7 @@
 
         function saveTask(day, taskText, taskAmount) {
             const tasks = JSON.parse(localStorage.getItem(day)) || [];
-            tasks.push({ description: taskText, amount: taskAmount });
+            tasks.push({ description: taskText, amount: taskAmount, status: "Pending" }); // Default status
             localStorage.setItem(day, JSON.stringify(tasks));
         }
 
@@ -131,21 +146,71 @@
 
         function displayTasksForDay(day) {
             const tasks = JSON.parse(localStorage.getItem(day)) || [];
-            tasks.forEach(task => displayTask(day, task.description, task.amount));
+            tasks.forEach(task => displayTask(day, task.description, task.amount, task.status));
         }
 
-        function displayTask(day, taskText, taskAmount) {
+        function displayTask(day, taskText, taskAmount, status = "Pending") {
             const tasksContainer = document.getElementById(`tasks${day}`);
             const taskItem = document.createElement("div");
             taskItem.classList.add("task-item");
             taskItem.textContent = `${taskText} - $${taskAmount.toFixed(2)}`;
+            taskItem.dataset.status = status; // Store the status for each task
+
+            // Create a status button for changing status
+            const statusButton = document.createElement("button");
+            statusButton.textContent = status;
+            statusButton.onclick = () => changeStatus(taskItem);
+
+            // Apply color based on status
+            updateTaskColor(taskItem, status);
+
+            taskItem.appendChild(statusButton);
             tasksContainer.appendChild(taskItem);
+        }
+
+        function changeStatus(taskItem) {
+            const currentStatus = taskItem.dataset.status;
+            const newStatus = currentStatus === "Pending" ? "Done" : currentStatus === "Done" ? "In Progress" : "Getting Stock";
+            taskItem.dataset.status = newStatus; // Update status
+            taskItem.querySelector("button").textContent = newStatus; // Update button text
+            updateTaskColor(taskItem, newStatus); // Change color based on status
+
+            // Save updated tasks back to localStorage (you may want to handle this differently)
+            saveUpdatedTasks();
+        }
+
+        function updateTaskColor(taskItem, status) {
+            switch (status) {
+                case "Done":
+                    taskItem.style.backgroundColor = "green";
+                    break;
+                case "In Progress":
+                    taskItem.style.backgroundColor = "orange";
+                    break;
+                case "Getting Stock":
+                    taskItem.style.backgroundColor = "red";
+                    break;
+                default:
+                    taskItem.style.backgroundColor = ""; // Reset to default
+            }
         }
 
         function updateDayTotal(day) {
             const tasks = JSON.parse(localStorage.getItem(day)) || [];
             const total = tasks.reduce((sum, task) => sum + task.amount, 0);
             document.getElementById(`total${day}`).textContent = `Total: $${total.toFixed(2)}`;
+        }
+
+        function saveUpdatedTasks() {
+            const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+            daysOfWeek.forEach(day => {
+                const tasks = Array.from(document.getElementById(`tasks${day}`).children).map(taskItem => ({
+                    description: taskItem.textContent.split(' - ')[0],
+                    amount: parseFloat(taskItem.textContent.split(' - $')[1]),
+                    status: taskItem.dataset.status,
+                }));
+                localStorage.setItem(day, JSON.stringify(tasks));
+            });
         }
     </script>
 </body>
